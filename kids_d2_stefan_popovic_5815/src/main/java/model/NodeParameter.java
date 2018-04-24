@@ -1,11 +1,18 @@
 package model;
 
+/**
+ * Represents a single parameter used by a Node. The type of a parameter can only
+ * belong to VALID_TYPES.
+ * @author stefan
+ *
+ * @param <T>
+ */
 public class NodeParameter <T> {
 	
 	/**
 	 * Only these values will be accepted as node parameters
 	 */
-	private static final Class<?>[] validTypes = new Class<?>[] {
+	public static final Class<?>[] VALID_TYPES = new Class<?>[] {
 		String.class,
 		Integer.class,
 		Double.class,
@@ -51,7 +58,7 @@ public class NodeParameter <T> {
 	 * @param value
 	 */
 	private void checkIsTypeValid(T value) {
-		for(Class<?> type : validTypes) {
+		for(Class<?> type : VALID_TYPES) {
 			if(type.isInstance(value)) {
 				return;
 			}
