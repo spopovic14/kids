@@ -9,7 +9,7 @@ public abstract class InputNode extends Node {
 	/**
 	 * The output of this node
 	 */
-	protected BlockingQueue<PipelineCollection> output;
+	private BlockingQueue<PipelineCollection> output;
 
 	/**
 	 * InputNode constructor. Instantiates a LinkedBlockingQueue as this nodes output
