@@ -112,6 +112,13 @@ public abstract class Node {
 	protected abstract void onThreadException(Exception e);
 	
 	/**
+	 * Should return the next available resource id. Is used when creating PipelineId
+	 * objects. Needs to return a unique value for this object.
+	 * @return
+	 */
+	public abstract int getNextResourceId();
+	
+	/**
 	 * Starts this node. Throws a RuntimeException if there are required parameters
 	 * that haven't been supplied
 	 */
