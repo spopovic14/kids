@@ -8,6 +8,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import data.PipelineId;
+
 /**
  * Represents a single node in the system.
  * @author stefan
@@ -208,6 +210,14 @@ public abstract class Node {
 	 */
 	public final int getThreadCount() {
 		return threadCount.get();
+	}
+	
+	/**
+	 * Creates a PipelineId using this node's id and the next resource id
+	 * @return
+	 */
+	public final PipelineId createPipelineId() {
+		return new PipelineId(getId(), getNextResourceId());
 	}
 	
 	/**
