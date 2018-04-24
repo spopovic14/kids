@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Represents a single node in the system.
@@ -27,7 +28,7 @@ public abstract class Node {
 	/**
 	 * Number of threads used by this node. Can be changed
 	 */
-	private int threadCount;
+	private AtomicInteger threadCount;
 	
 	/**
 	 * A map of parameters used by this node
@@ -50,20 +51,25 @@ public abstract class Node {
 	private boolean running;
 	
 	/**
-	 * The current status of this node. Can be either ACTIVE, WAITING or STOPPED
+	 * Every bit represents the status of the thread with id (bit position - 1)
+	 * (left to right). 1 means that the thread is working and 0 means that
+	 * it's waiting. If this number is 0, then every thread is waiting,
+	 * and if it's greater than 0, at least one thread is working
 	 */
-	private NodeStatus status;
+	private AtomicInteger threadStatuses;
 	
 	/**
 	 * @param threadCount should be greater than or equal to 2 (defaults to 2 if not)
 	 */
 	public Node(int threadCount) {
-		id = nextId++;
+		this.id = nextId++;
 		
-		parameters = new HashMap<String, NodeParameter<?>>();
+		this.threadCount = new AtomicInteger();
 		setThreadCount(threadCount);
-		executorService = Executors.newCachedThreadPool();
-		taskList = new LinkedList<Node.Task>();
+		this.parameters = new HashMap<String, NodeParameter<?>>();
+		this.executorService = Executors.newCachedThreadPool();
+		this.taskList = new LinkedList<Node.Task>();
+		this.threadStatuses = new AtomicInteger(0);
 		
 		fillTaskList();
 	}
@@ -84,7 +90,9 @@ public abstract class Node {
 	 * Does a work cycle for one thread in this node. Since the thread count can be
 	 * reduced by the user at any time, this method should not be blocking (or it
 	 * should have a timeout for actions that are blocking) so the thread can
-	 * finish the current cycle before terminating. 
+	 * finish the current cycle before terminating. This method should also
+	 * change the thread status depending on what it does (not working if
+	 * there is no input and working if it's being processed)
 	 * @param threadID
 	 * @throws Exception
 	 */
@@ -169,7 +177,7 @@ public abstract class Node {
 			newCount = 2;
 		}
 		
-		threadCount = newCount;
+		threadCount.set(newCount);
 		
 		if(running) {
 			fillTaskList();
@@ -179,19 +187,17 @@ public abstract class Node {
 	}
 	
 	/**
-	 * Status setter
-	 * @param status
-	 */
-	public void setStatus(NodeStatus status) {
-		this.status = status;
-	}
-	
-	/**
-	 * Getter for status
+	 * Gets the status of the node. Returns ACTIVE if it's working, WAITING
+	 * if all the threads are waiting for work and STOPPED if the node was
+	 * stopped (because of an error or another reason)
 	 * @return
 	 */
 	public NodeStatus getStatus() {
-		return status;
+		if(!running) {
+			return NodeStatus.STOPPED;
+		}
+		
+		return threadStatuses.get() == 0 ? NodeStatus.WAITING : NodeStatus.ACTIVE;
 	}
 	
 	/**
@@ -199,7 +205,7 @@ public abstract class Node {
 	 * @return
 	 */
 	public final int getThreadCount() {
-		return threadCount;
+		return threadCount.get();
 	}
 	
 	/**
@@ -209,7 +215,7 @@ public abstract class Node {
 	 * @param unit
 	 */
 	public void terminate(long timeout, TimeUnit unit) {
-		threadCount = 0;
+		threadCount = new AtomicInteger(0);
 		terminateTasks();
 		
 		try {
@@ -225,7 +231,7 @@ public abstract class Node {
 	 * Fills the task list with new tasks, up until there are threadCount tasks in it
 	 */
 	private void fillTaskList() {
-		for(int i = taskList.size(); i < threadCount; i++) {
+		for(int i = taskList.size(); i < threadCount.get(); i++) {
 			Task task = new Task(i);
 			taskList.add(task);
 		}
@@ -246,17 +252,31 @@ public abstract class Node {
 	 * Sends the terminate signal to all the tasks and clears the task list
 	 */
 	private void terminateTasks() {
-		if(threadCount >= taskList.size()) {
+		if(threadCount.get() >= taskList.size()) {
 			return;
 		}
 		
-		List<Task> tasksToTerminate = taskList.subList(threadCount, taskList.size());
+		List<Task> tasksToTerminate = taskList.subList(threadCount.get(), taskList.size());
 		
 		for(Task task : tasksToTerminate) {
 			task.terminate();
 		}
 		
 		tasksToTerminate.clear();
+	}
+	
+	/**
+	 * Sets the staus of the thread to 1 (if working) or 0 (if not working)
+	 * @param threadId
+	 * @param working
+	 */
+	protected void setThreadStatus(int threadId, boolean working) {
+		if(working) {
+			threadStatuses.accumulateAndGet(threadId, (x, y) -> x | (1 << y));
+		}
+		else {
+			threadStatuses.accumulateAndGet(threadId, (x, y) -> x & ~(1 << y));
+		}
 	}
 	
 	/**
@@ -332,6 +352,7 @@ public abstract class Node {
 		 * Signals that this task should be terminated as soon as possible
 		 */
 		public void terminate() {
+			setThreadStatus(id, false);
 			terminated = true;
 		}
 		
