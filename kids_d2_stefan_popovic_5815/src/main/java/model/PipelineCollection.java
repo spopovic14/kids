@@ -2,11 +2,11 @@ package model;
 
 public interface PipelineCollection {
 	
-	public PipelineID getID();
+	public PipelineId getId();
 	
-	public PipelineData peek(PipelineID id);
+	public PipelineData peek(PipelineId id);
 	
-	public PipelineData take(PipelineID id);
+	public PipelineData take(PipelineId id);
 	
 	public void put(PipelineData data);
 	

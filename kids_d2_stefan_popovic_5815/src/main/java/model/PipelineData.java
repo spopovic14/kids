@@ -2,7 +2,7 @@ package model;
 
 public interface PipelineData {
 	
-	public PipelineID getID();
+	public PipelineId getId();
 	
 	public Object getValue(String key);
 	
