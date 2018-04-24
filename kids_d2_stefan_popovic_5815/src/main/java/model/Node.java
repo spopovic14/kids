@@ -124,7 +124,7 @@ public abstract class Node {
 	 * objects. Needs to return a unique value for this object.
 	 * @return
 	 */
-	public abstract int getNextResourceId();
+	protected abstract int getNextResourceId();
 	
 	/**
 	 * Starts this node. Throws a RuntimeException if there are required parameters
@@ -150,7 +150,9 @@ public abstract class Node {
 	 * @param parameter
 	 */
 	public final void addParameter(String parameterName, NodeParameter<?> parameter) {
-		parameters.put(parameterName, parameter);
+		if(!running) {
+			parameters.put(parameterName, parameter);
+		}
 	}
 	
 	/**
@@ -159,7 +161,7 @@ public abstract class Node {
 	 * @param parameterName
 	 * @return
 	 */
-	public final Object getParameterValue(String parameterName) {
+	protected final Object getParameterValue(String parameterName) {
 		if(!parameters.containsKey(parameterName)) {
 			return null;
 		}
@@ -214,7 +216,7 @@ public abstract class Node {
 	 * @param timeout
 	 * @param unit
 	 */
-	public void terminate(long timeout, TimeUnit unit) {
+	public final void terminate(long timeout, TimeUnit unit) {
 		threadCount = new AtomicInteger(0);
 		terminateTasks();
 		
@@ -270,7 +272,7 @@ public abstract class Node {
 	 * @param threadId
 	 * @param working
 	 */
-	protected void setThreadStatus(int threadId, boolean working) {
+	protected final void setThreadStatus(int threadId, boolean working) {
 		if(working) {
 			threadStatuses.accumulateAndGet(threadId, (x, y) -> x | (1 << y));
 		}
@@ -293,7 +295,7 @@ public abstract class Node {
 	 * Id getter
 	 * @return
 	 */
-	public int getId() {
+	public final int getId() {
 		return id;
 	}
 	
