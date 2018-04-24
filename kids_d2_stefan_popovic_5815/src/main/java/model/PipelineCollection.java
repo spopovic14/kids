@@ -6,8 +6,8 @@ public interface PipelineCollection {
 	
 	public PipelineData peek(PipelineId id);
 	
-	public PipelineData take(PipelineId id);
+	public PipelineData take() throws InterruptedException;
 	
-	public void put(PipelineData data);
+	public void put(PipelineData data) throws InterruptedException;
 	
 }
