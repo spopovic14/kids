@@ -6,27 +6,60 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class InputNode extends Node {
 	
-	protected BlockingQueue<PipelineCollection> outputQueue;
+	/**
+	 * The output of this node
+	 */
+	protected BlockingQueue<PipelineCollection> output;
 
+	/**
+	 * InputNode constructor. Instantiates a LinkedBlockingQueue as this nodes output
+	 * @param threadCount
+	 */
 	public InputNode(int threadCount) {
 		super(threadCount);
-		outputQueue = new LinkedBlockingQueue<PipelineCollection>();
+		output = new LinkedBlockingQueue<PipelineCollection>();
 	}
 	
-	public PipelineCollection getOutputBlocking() throws InterruptedException {
-		return outputQueue.take();
+	/**
+	 * Inserts the specified element into this queue, waiting if necessary for
+	 * space to become available.
+	 * @param data
+	 * @throws InterruptedException
+	 */
+	protected void put(PipelineCollection data) throws InterruptedException {
+		output.put(data);
 	}
 	
-	public PipelineCollection getOutput() {
-		return outputQueue.poll();
+	/**
+	 * Inserts the specified element into this queue if it is possible to do so
+	 * immediately without violating capacity restrictions, returning true upon
+	 * success and false if no space is currently available.
+	 * @param data
+	 * @return
+	 */
+	protected boolean offer(PipelineCollection data) {
+		return output.offer(data);
 	}
 	
-	public PipelineCollection getOutput(long timeout, TimeUnit unit) throws InterruptedException {
-		return outputQueue.poll(timeout, unit);
+	/**
+	 * Inserts the specified element into the output queue, waiting up to the
+	 * specified wait time if necessary for space to become available.
+	 * @param data
+	 * @param timeout
+	 * @param unit
+	 * @return
+	 * @throws InterruptedException
+	 */
+	protected boolean offer(PipelineCollection data, long timeout, TimeUnit unit) throws InterruptedException {
+		return output.offer(data, timeout, unit);
 	}
 	
-	public PipelineCollection peekOutput() {
-		return outputQueue.peek();
+	/**
+	 * Returns the output queue of this node
+	 * @return
+	 */
+	public BlockingQueue<PipelineCollection> getOutput() {
+		return output;
 	}
 
 }
