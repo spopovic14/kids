@@ -18,6 +18,16 @@ public abstract class WorkerNode extends Node {
 	protected List<OutputNode> outputNodes;
 	
 	/**
+	 * The WorkerNode before this node. Can be null
+	 */
+	protected WorkerNode previousWorkerNode;
+	
+	/**
+	 * The WorkerNode after this node. Can be null
+	 */
+	protected WorkerNode nextWorkerNode;
+	
+	/**
 	 * Constructor for WorkerNode that instantiates ArrayLists as the input and output node lists
 	 * @param threadCount
 	 */
@@ -50,6 +60,24 @@ public abstract class WorkerNode extends Node {
 		if(!outputNodes.contains(node)) {
 			outputNodes.add(node);
 		}
+	}
+	
+	/**
+	 * Setter for previousNode. Also sets that node's nextNode to this node
+	 * @param node
+	 */
+	public void setPreviousWorkerNode(WorkerNode node) {
+		previousWorkerNode = node;
+		node.setNextWorkerNode(this);
+	}
+	
+	/**
+	 * Setter for nextNode. Also sets that node's previousNode to this node
+	 * @param node
+	 */
+	public void setNextWorkerNode(WorkerNode node) {
+		nextWorkerNode = node;
+		node.setPreviousWorkerNode(this);
 	}
 	
 	/*
