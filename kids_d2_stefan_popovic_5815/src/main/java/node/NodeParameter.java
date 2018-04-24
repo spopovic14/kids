@@ -1,4 +1,4 @@
-package model;
+package node;
 
 /**
  * Represents a single parameter used by a Node. The type of a parameter can only

@@ -1,7 +1,9 @@
-package model;
+package node;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import data.PipelineCollection;
 
 public abstract class OutputNode extends Node {
 	

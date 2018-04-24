@@ -1,4 +1,4 @@
-package model;
+package node;
 
 public enum NodeStatus {
 
