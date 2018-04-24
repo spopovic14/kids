@@ -60,4 +60,12 @@ public abstract class OutputNode extends Node {
 		return input.poll(timeout, unit);
 	}
 	
+	/**
+	 * Returns the input queue of this node
+	 * @return
+	 */
+	public BlockingQueue<PipelineCollection> getInput() {
+		return input;
+	}
+	
 }

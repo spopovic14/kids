@@ -21,8 +21,8 @@ public abstract class InputNode extends Node {
 	}
 	
 	/**
-	 * Inserts the specified element into this queue, waiting if necessary for
-	 * space to become available.
+	 * Inserts the specified element into the output queue, waiting if necessary
+	 * for space to become available.
 	 * @param data
 	 * @throws InterruptedException
 	 */
@@ -31,9 +31,9 @@ public abstract class InputNode extends Node {
 	}
 	
 	/**
-	 * Inserts the specified element into this queue if it is possible to do so
-	 * immediately without violating capacity restrictions, returning true upon
-	 * success and false if no space is currently available.
+	 * Inserts the specified element into the output queue if it is possible to
+	 * do so immediately without violating capacity restrictions, returning
+	 * true upon success and false if no space is currently available.
 	 * @param data
 	 * @return
 	 */
