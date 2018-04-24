@@ -74,8 +74,9 @@ public abstract class Node {
 	 * should have a timeout for actions that are blocking) so the thread can
 	 * finish the current cycle before terminating. 
 	 * @param threadID
+	 * @throws Exception
 	 */
-	protected abstract void doWorkCycle(int threadID);
+	protected abstract void doWorkCycle(int threadID) throws Exception;
 	
 	/**
 	 * Gets called when a thread starts. Should be used for initialization of
@@ -90,6 +91,13 @@ public abstract class Node {
 	 * @param threadID
 	 */
 	protected abstract void onThreadFinish(int threadID);
+	
+	/**
+	 * Gets called when an exception occurs on any thread. The outcome is different
+	 * depending on the type of this node.
+	 * @param e
+	 */
+	protected abstract void onThreadException(Exception e);
 	
 	/**
 	 * Starts this node. Throws a RuntimeException if there are required parameters
@@ -233,6 +241,16 @@ public abstract class Node {
 	}
 	
 	/**
+	 * Calls onThreadException and terminates all the threads immediately
+	 * @param threadId
+	 * @param e
+	 */
+	private void catchThreadException(int threadId, Exception e) {
+		onThreadException(e);
+		terminate(0, TimeUnit.MILLISECONDS);
+	}
+	
+	/**
 	 * Represents a single thread that does work for a single node. Each task has its
 	 * own ID
 	 * @author stefan
@@ -271,7 +289,12 @@ public abstract class Node {
 			onThreadStart(id);
 			
 			while(!terminated) {
-				doWorkCycle(id);
+				try {
+					doWorkCycle(id);
+				} catch (Exception e) {
+					catchThreadException(id, e);
+					break;
+				}
 			}
 			
 			onThreadFinish(id);
