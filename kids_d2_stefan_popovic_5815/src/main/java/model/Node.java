@@ -15,6 +15,16 @@ import java.util.concurrent.TimeUnit;
 public abstract class Node {
 	
 	/**
+	 * Id that will be given to the next node
+	 */
+	private static int nextId = 0;
+	
+	/**
+	 * Unique identifier of this node
+	 */
+	private final int id;
+	
+	/**
 	 * Number of threads used by this node. Can be changed
 	 */
 	private int threadCount;
@@ -48,6 +58,8 @@ public abstract class Node {
 	 * @param threadCount should be greater than or equal to 2 (defaults to 2 if not)
 	 */
 	public Node(int threadCount) {
+		id = nextId++;
+		
 		parameters = new HashMap<String, NodeParameter<?>>();
 		setThreadCount(threadCount);
 		executorService = Executors.newCachedThreadPool();
@@ -248,6 +260,14 @@ public abstract class Node {
 	private void catchThreadException(int threadId, Exception e) {
 		onThreadException(e);
 		terminate(0, TimeUnit.MILLISECONDS);
+	}
+	
+	/**
+	 * Id getter
+	 * @return
+	 */
+	public int getId() {
+		return id;
 	}
 	
 	/**
