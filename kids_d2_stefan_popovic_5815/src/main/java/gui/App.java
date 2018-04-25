@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import core.Pipeline;
+import node.NodeStatus;
 import node.WorkerNode;
 
 @SuppressWarnings("serial")
@@ -64,10 +65,8 @@ public class App extends JFrame {
 	}
 	
 	public static void main(String[] args) {
-		App app = new App();
-		app.start();
 		
-		app.addWorkerNode(new WorkerNode(2) {
+		WorkerNode node = new WorkerNode(2) {
 			
 			@Override
 			protected void onThreadStart(int threadID) {
@@ -85,6 +84,7 @@ public class App extends JFrame {
 			public List<Pair<String, Class<?>>> getRequiredParameterNames() {
 				List<Pair<String, Class<?>>> list = new LinkedList<>();
 				list.add(new ImmutablePair<>("FirstParameter", String.class));
+				list.add(new ImmutablePair<>("EnumParam", NodeStatus.class));
 				return list;
 			}
 			
@@ -102,10 +102,13 @@ public class App extends JFrame {
 			
 			@Override
 			protected void doWorkCycle(int threadID) throws Exception {
-				// TODO Auto-generated method stub
-				
+				Thread.sleep(500);
 			}
-		});
+		};
+		
+		App app = new App();
+		app.start();
+		app.addWorkerNode(node);
 	}
 	
 }

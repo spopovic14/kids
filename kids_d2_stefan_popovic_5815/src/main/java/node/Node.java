@@ -37,7 +37,7 @@ public abstract class Node {
 	/**
 	 * A map of parameters used by this node
 	 */
-	private HashMap<String, Parameter<?>> parameters;
+	private HashMap<String, Parameter> parameters;
 	
 	/**
 	 * ExecutorService used for starting tasks
@@ -70,14 +70,14 @@ public abstract class Node {
 		
 		this.threadCount = new AtomicInteger();
 		setThreadCount(threadCount);
-		this.parameters = new HashMap<String, Parameter<?>>();
+		this.parameters = new HashMap<String, Parameter>();
 		this.executorService = Executors.newCachedThreadPool();
 		this.taskList = new LinkedList<Node.Task>();
 		this.threadStatuses = new AtomicInteger(0);
 		
 		List<Pair<String, Class<?>>> requiredParameters = getRequiredParameterNames();
 		for(Pair<String, Class<?>> pair : requiredParameters) {
-			parameters.put(pair.getKey(), new Parameter<>(pair.getValue()));
+			parameters.put(pair.getKey(), new Parameter(pair.getValue()));
 		}
 		
 		fillTaskList();
@@ -156,14 +156,19 @@ public abstract class Node {
 	 * @param parameterName
 	 * @param parameter
 	 */
-	public final void addParameter(String parameterName, Parameter<?> parameter) {
+	public final void addParameter(String parameterName, Parameter parameter) {
 		if(!running) {
 			parameters.put(parameterName, parameter);
 		}
 	}
 	
-	public final Parameter<?> getParameter(String name) {
+	public final Parameter getParameter(String name) {
 		return parameters.get(name); // TODO document
+	}
+	
+	// TODO add documentation
+	public final HashMap<String, Parameter> getParameters() {
+		return parameters;
 	}
 	
 	/**

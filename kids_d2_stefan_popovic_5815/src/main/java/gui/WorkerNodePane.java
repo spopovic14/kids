@@ -3,10 +3,14 @@ package gui;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -68,14 +72,59 @@ public class WorkerNodePane extends JPanel {
 		add(threadPanel);
 		
 		for(Pair<String, Class<?>> pair : node.getRequiredParameterNames()) {
-			pair.getRight(); // - returns the class
+			pair.getValue(); // - returns the class
 			// add a widget for every parameter
+			
+		}
+		
+		for(Entry<String, Parameter> entry : node.getParameters().entrySet()) {
+			String name = entry.getKey();
+			Parameter parameter = entry.getValue();
+			
+			if(parameter.getType().equals(String.class)) {
+				ParameterInput input = new StringParameterInput(parameter);
+				add(input);
+			}
+			else if(parameter.getType().isEnum()) {
+				EnumParameterInput input = new EnumParameterInput(parameter);
+				add(input);
+			}
 		}
 	}
 	
-	private class ParameterInput {
+	private abstract class ParameterInput extends JPanel {
 		
-//		private Parameter<T>
+		private Parameter parameter;
+		
+		public ParameterInput(Parameter parameter) {
+			this.parameter = parameter;
+		}
+		
+	}
+	
+	private class StringParameterInput extends ParameterInput {
+
+		public StringParameterInput(Parameter parameter) {
+			super(parameter);
+			
+			JTextField field = new JTextField(10);
+			add(field);
+		}
+		
+	}
+	
+	private class EnumParameterInput extends ParameterInput {
+
+		public EnumParameterInput(Parameter parameter) {
+			super(parameter);
+			
+			Class<?> clazz = parameter.getType();
+			Object[] values = clazz.getEnumConstants();
+			
+			JComboBox<Object> box = new JComboBox<>(values);
+			
+			add(box);
+		}
 		
 	}
 	

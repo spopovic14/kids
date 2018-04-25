@@ -1,6 +1,7 @@
 package node;
 
-public class Parameter<T> {
+// TODO add documentation and change name to NodeParameter
+public class Parameter {
 	
 	public static final Class<?>[] VALID_TYPES = new Class<?>[] {
 		String.class,
@@ -10,16 +11,20 @@ public class Parameter<T> {
 		Enum.class,
 	};
 	
-	private T value;
+	private Object value;
 	
-	private Class<T> type;
+	private Class<?> type;
 	
-	public Parameter(Class<T> type) {
+	public Parameter(Class<?> type) {
 		checkIsTypeValid(type);
 		this.type = type;
 	}
 	
-	private void checkIsTypeValid(Class<T> type) {
+	private void checkIsTypeValid(Class<?> type) {
+		if(type.isEnum()) {
+			return;
+		}
+		
 		for(Class<?> clazz : VALID_TYPES) {
 			if(type.isAssignableFrom(clazz)) {
 				return;
@@ -29,15 +34,20 @@ public class Parameter<T> {
 		throw new RuntimeException("Node parameters cannot be " + type.getName());
 	}
 	
-	public void setValue(T value) {
+	public void setValue(Object value) {
+		if(!type.isInstance(value)) {
+			throw new RuntimeException(
+				"Parameter requires " + type.getName() + " but " + value.getClass().getName() + " given"
+			);
+		}
 		this.value = value;
 	}
 	
-	public T getValue() {
+	public Object getValue() {
 		return value;
 	}
 	
-	public Class<T> getType() {
+	public Class<?> getType() {
 		return type;
 	}
 	
