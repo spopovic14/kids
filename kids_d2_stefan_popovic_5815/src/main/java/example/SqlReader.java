@@ -28,8 +28,6 @@ import data.PipelineCollection;
 import data.PipelineData;
 import node.InputNode;
 
-// TODO: Create test fixtures to be used, create worker node to test the output of this node
-// TODO: Currently the query reads the same data over and over. Possibly change that? (Delete data after reading, paginate by id, LIMIT/OFFSET...)
 
 public class SqlReader extends InputNode {
 	

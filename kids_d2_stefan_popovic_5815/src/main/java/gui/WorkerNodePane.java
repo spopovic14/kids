@@ -14,7 +14,6 @@ import javax.swing.JTextField;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import node.NodeParameter;
 import node.Parameter;
 import node.WorkerNode;
 
