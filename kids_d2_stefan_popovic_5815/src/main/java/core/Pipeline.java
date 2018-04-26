@@ -2,7 +2,10 @@ package core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import node.InputNode;
+import node.OutputNode;
 import node.WorkerNode;
 
 public class Pipeline {
@@ -15,7 +18,29 @@ public class Pipeline {
 	
 	public void start() {
 		for(WorkerNode node : workerNodes) {
+			for(InputNode input : node.getInputNodes()) {
+				input.start();
+			}
+			
 			node.start();
+			
+			for(OutputNode output : node.getOutputNodes()) {
+				output.start();
+			}
+		}
+	}
+	
+	public void stop() {
+		for(WorkerNode node : workerNodes) {
+			for(InputNode input : node.getInputNodes()) {
+				input.terminate(0, TimeUnit.MILLISECONDS);
+			}
+			
+			node.terminate(0, TimeUnit.MILLISECONDS);
+			
+			for(OutputNode output : node.getOutputNodes()) {
+				output.terminate(0, TimeUnit.MILLISECONDS);
+			}
 		}
 	}
 	

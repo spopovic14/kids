@@ -3,6 +3,7 @@ package node;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import data.PipelineCollection;
@@ -30,6 +31,11 @@ public abstract class WorkerNode extends Node {
 	protected WorkerNode nextWorkerNode;
 	
 	/**
+	 * The combined input of this node
+	 */
+	protected BlockingQueue<PipelineCollection> input;
+	
+	/**
 	 * Constructor for WorkerNode that instantiates ArrayLists as the input and output node lists
 	 * @param threadCount
 	 */
@@ -37,6 +43,7 @@ public abstract class WorkerNode extends Node {
 		super(threadCount);
 		inputNodes = new ArrayList<>();
 		outputNodes = new ArrayList<>();
+		input = new LinkedBlockingQueue<>();
 	}
 
 	@Override
@@ -45,12 +52,14 @@ public abstract class WorkerNode extends Node {
 	}
 	
 	/**
-	 * Adds an InputNode to this node's input nodes
+	 * Adds an InputNode to this node's input nodes and sets that node's output
+	 * queue to this node's input queue
 	 * @param node
 	 */
 	public void addInputNode(InputNode node) {
 		if(!inputNodes.contains(node)) {
 			inputNodes.add(node);
+			node.setOutput(input);
 		}
 	}
 	
@@ -82,6 +91,22 @@ public abstract class WorkerNode extends Node {
 		node.setPreviousWorkerNode(this);
 	}
 	
+	/**
+	 * Getter for input
+	 * @return
+	 */
+	public BlockingQueue<PipelineCollection> getInput() {
+		return input;
+	}
+	
+	public List<InputNode> getInputNodes() {
+		return inputNodes;
+	}
+	
+	public List<OutputNode> getOutputNodes() {
+		return outputNodes;
+	}
+	
 	/*
 	 * ========================================================================
 	 *                           Input node methods
@@ -91,44 +116,40 @@ public abstract class WorkerNode extends Node {
 	/**
 	 * Retrieves and removes the head of the input queue, waiting if necessary
 	 * until an element becomes available.
-	 * @param input
 	 * @return
 	 * @throws InterruptedException
 	 */
-	protected PipelineCollection inputTake(BlockingQueue<PipelineCollection> input) throws InterruptedException {
+	protected PipelineCollection inputTake() throws InterruptedException {
 		return input.take();
 	}
 	
 	/**
 	 * Retrieves, but does not remove, the head of the input queue, or returns
 	 * null if this queue is empty.
-	 * @param input
 	 * @return
 	 */
-	protected PipelineCollection inputPeek(BlockingQueue<PipelineCollection> input) {
+	protected PipelineCollection inputPeek() {
 		return input.peek();
 	}
 	
 	/**
 	 * Retrieves and removes the head of the input queue, or returns null if
 	 * this queue is empty.
-	 * @param input
 	 * @return
 	 */
-	protected PipelineCollection inputPoll(BlockingQueue<PipelineCollection> input) {
+	protected PipelineCollection inputPoll() {
 		return input.poll();
 	}
 	
 	/**
 	 * Retrieves and removes the head of the input queue, waiting up to the
 	 * specified wait time if necessary for an element to become available.
-	 * @param input
 	 * @param timeout
 	 * @param unit
 	 * @return
 	 * @throws InterruptedException
 	 */
-	protected PipelineCollection inputPoll(BlockingQueue<PipelineCollection> input, long timeout, TimeUnit unit) throws InterruptedException {
+	protected PipelineCollection inputPoll(long timeout, TimeUnit unit) throws InterruptedException {
 		return input.poll(timeout, unit);
 	}
 	
@@ -170,6 +191,16 @@ public abstract class WorkerNode extends Node {
 	 */
 	protected boolean offer(BlockingQueue<PipelineCollection> output, PipelineCollection data, long timeout, TimeUnit unit) throws InterruptedException {
 		return output.offer(data, timeout, unit);
+	}
+	
+	protected void outputAll(PipelineCollection data) throws InterruptedException {
+		if(nextWorkerNode != null) {
+			nextWorkerNode.getInput().put(data);
+		}
+		
+		for(OutputNode output : outputNodes) {
+			put(output.getInput(), data);
+		}
 	}
 
 }

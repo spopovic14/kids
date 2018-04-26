@@ -2,6 +2,7 @@ package data;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class GenericPipelineCollection implements PipelineCollection {
 	
@@ -34,6 +35,11 @@ public class GenericPipelineCollection implements PipelineCollection {
 
 	public void put(PipelineData data) throws InterruptedException {
 		queue.put(data);
+	}
+
+	@Override
+	public PipelineData poll(long timeout, TimeUnit unit) throws InterruptedException {
+		return queue.poll(timeout, unit);
 	}
 
 }

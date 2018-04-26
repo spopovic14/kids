@@ -2,6 +2,8 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,6 +16,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import core.Pipeline;
+import example.GuiDisplay;
+import example.RangeSplitter;
+import example.SqlReader;
 import node.NodeStatus;
 import node.WorkerNode;
 
@@ -39,22 +44,40 @@ public class App extends JFrame {
 	private void initialize() {
 		pipeline = new Pipeline();
 		
-		setLayout(new BorderLayout());
+		JPanel content = new JPanel(new BorderLayout());
 		
 		nodePanel = new JPanel();
 		
 		JPanel pan2 = new JPanel();
-		pan2.setBackground(Color.RED);
 		
 		JScrollPane scroll = new JScrollPane(nodePanel);
 		
-		add(scroll, BorderLayout.CENTER);
-		add(pan2, BorderLayout.SOUTH);
+		content.add(scroll, BorderLayout.CENTER);
+		content.add(pan2, BorderLayout.SOUTH);
 		
-		JButton button = new JButton("Start");
-		pan2.add(button);
+		JButton startButton = new JButton("Start");
+		pan2.add(startButton);
 		
+		startButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				pipeline.start();
+			}
+		});
 		
+		JButton stopButton = new JButton("Stop");
+		pan2.add(stopButton);
+		
+		stopButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				pipeline.stop();
+			}
+		});
+		
+		setContentPane(content);
 		setSize(800, 600);
 	}
 	
@@ -65,50 +88,25 @@ public class App extends JFrame {
 	}
 	
 	public static void main(String[] args) {
-		
-		WorkerNode node = new WorkerNode(2) {
-			
-			@Override
-			protected void onThreadStart(int threadID) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			protected void onThreadFinish(int threadID) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public List<Pair<String, Class<?>>> getRequiredParameterNames() {
-				List<Pair<String, Class<?>>> list = new LinkedList<>();
-				list.add(new ImmutablePair<>("FirstParameter", String.class));
-				list.add(new ImmutablePair<>("EnumParam", NodeStatus.class));
-				return list;
-			}
-			
-			@Override
-			public String getNodeName() {
-				// TODO Auto-generated method stub
-				return "SqlReader";
-			}
-			
-			@Override
-			protected int getNextResourceId() {
-				// TODO Auto-generated method stub
-				return 0;
-			}
-			
-			@Override
-			protected void doWorkCycle(int threadID) throws Exception {
-				Thread.sleep(500);
-			}
-		};
-		
 		App app = new App();
 		app.start();
-		app.addWorkerNode(node);
+		
+		SqlReader reader = new SqlReader(2);
+		reader.getParameter("JDBC-Url").setValue("jdbc:mysql://localhost:3306/kids_test");
+		reader.getParameter("User").setValue("root");
+		reader.getParameter("Password").setValue("");
+		reader.getParameter("Package-Size").setValue(3);
+		
+		RangeSplitter splitter = new RangeSplitter(2);
+		splitter.getParameter("Split-Key").setValue("id");
+		
+		splitter.addInputNode(reader);
+		
+		GuiDisplay display = new GuiDisplay(2);
+		splitter.addOuputNode(display);
+		
+		app.addWorkerNode(splitter);
+		app.revalidate();
 	}
 	
 }

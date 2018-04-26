@@ -96,30 +96,36 @@ public abstract class Node {
 	public abstract String getNodeName();
 	
 	/**
+	 * Gets called when the node is started on the main thread. Any work that needs
+	 * to be done for the entire node (not every thread individually) goes here
+	 */
+	protected abstract void onNodeStart() throws Exception;
+	
+	/**
 	 * Does a work cycle for one thread in this node. Since the thread count can be
 	 * reduced by the user at any time, this method should not be blocking (or it
 	 * should have a timeout for actions that are blocking) so the thread can
 	 * finish the current cycle before terminating. This method should also
 	 * change the thread status depending on what it does (not working if
 	 * there is no input and working if it's being processed)
-	 * @param threadID
+	 * @param threadId
 	 * @throws Exception
 	 */
-	protected abstract void doWorkCycle(int threadID) throws Exception;
+	protected abstract void doWorkCycle(int threadId) throws Exception;
 	
 	/**
 	 * Gets called when a thread starts. Should be used for initialization of
 	 * needed resources such as a socket.
-	 * @param threadID
+	 * @param threadId
 	 */
-	protected abstract void onThreadStart(int threadID);
+	protected abstract void onThreadStart(int threadId);
 	
 	/**
 	 * Gets called when a thread terminates. Should be used for closing resources
 	 * used by the thread.
-	 * @param threadID
+	 * @param threadId
 	 */
-	protected abstract void onThreadFinish(int threadID);
+	protected abstract void onThreadFinish(int threadId);
 	
 	/**
 	 * Gets called when an exception occurs on any thread. The outcome is different
@@ -147,8 +153,13 @@ public abstract class Node {
 			}
 		}
 		
-		startTasks();
-		running = true;
+		try {
+			onNodeStart();
+			startTasks();
+			running = true;
+		} catch (Exception e) {
+			System.out.println("Exception when starting node " + getId() + ": " + e.getMessage());
+		}
 	}
 	
 	/**

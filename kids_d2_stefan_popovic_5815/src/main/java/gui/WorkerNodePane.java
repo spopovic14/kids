@@ -81,13 +81,19 @@ public class WorkerNodePane extends JPanel {
 			String name = entry.getKey();
 			Parameter parameter = entry.getValue();
 			
-			if(parameter.getType().equals(String.class)) {
-				ParameterInput input = new StringParameterInput(parameter);
-				add(input);
-			}
-			else if(parameter.getType().isEnum()) {
+			if(parameter.getType().isEnum()) {
 				EnumParameterInput input = new EnumParameterInput(parameter);
 				add(input);
+			}
+			else {
+				JLabel lab = new JLabel(name + ":");
+				add(lab);
+				
+				ParameterInput input = new StringParameterInput(parameter);
+				add(input);
+				
+				JLabel notice = new JLabel("*Param fields do not work");
+				add(notice);
 			}
 		}
 	}
@@ -100,20 +106,33 @@ public class WorkerNodePane extends JPanel {
 			this.parameter = parameter;
 		}
 		
+		public abstract Object getValue();
+		
 	}
 	
 	private class StringParameterInput extends ParameterInput {
+		
+		private JTextField field;
 
 		public StringParameterInput(Parameter parameter) {
 			super(parameter);
 			
-			JTextField field = new JTextField(10);
+			field = new JTextField(10);
 			add(field);
+			
+			// Hard code the value
+			field.setText("id");
+		}
+		
+		public Object getValue() {
+			return field.getText();
 		}
 		
 	}
 	
 	private class EnumParameterInput extends ParameterInput {
+		
+		private JComboBox<Object> box;
 
 		public EnumParameterInput(Parameter parameter) {
 			super(parameter);
@@ -121,9 +140,13 @@ public class WorkerNodePane extends JPanel {
 			Class<?> clazz = parameter.getType();
 			Object[] values = clazz.getEnumConstants();
 			
-			JComboBox<Object> box = new JComboBox<>(values);
+			box = new JComboBox<>(values);
 			
 			add(box);
+		}
+		
+		public Object getValue() {
+			return box.getSelectedItem();
 		}
 		
 	}

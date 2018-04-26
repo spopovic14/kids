@@ -63,5 +63,13 @@ public abstract class InputNode extends Node {
 	public BlockingQueue<PipelineCollection> getOutput() {
 		return output;
 	}
+	
+	/**
+	 * Sets the output of this node
+	 * @param output
+	 */
+	public void setOutput(BlockingQueue<PipelineCollection> output) {
+		this.output = output;
+	}
 
 }

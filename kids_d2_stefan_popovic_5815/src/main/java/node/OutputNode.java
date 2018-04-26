@@ -1,6 +1,7 @@
 package node;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import data.PipelineCollection;
@@ -17,9 +18,9 @@ public abstract class OutputNode extends Node {
 	 * @param threadCount
 	 * @param input
 	 */
-	public OutputNode(int threadCount, BlockingQueue<PipelineCollection> input) {
+	public OutputNode(int threadCount) {
 		super(threadCount);
-		this.input = input;
+		input = new LinkedBlockingQueue<>();
 	}
 	
 	/**
@@ -68,6 +69,10 @@ public abstract class OutputNode extends Node {
 	 */
 	public BlockingQueue<PipelineCollection> getInput() {
 		return input;
+	}
+	
+	public void setInput(BlockingQueue<PipelineCollection> input) {
+		this.input = input;
 	}
 	
 }
